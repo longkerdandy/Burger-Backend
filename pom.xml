@@ -13,7 +13,7 @@
 
     <groupId>com.github.longkerdandy</groupId>
     <artifactId>burger-backend</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Burger-Backend</name>
 
