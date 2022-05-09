@@ -1,5 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
+# Use Azure Spring Cloud CI/CD with GitHub Actions: https://docs.microsoft.com/en-us/azure/spring-cloud/how-to-github-actions?pivots=programming-language-java
 
 name: Main Build & Deploy
 
@@ -8,6 +7,10 @@ on:
     branches: [ main ]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+
+env:
+  ASC_PACKAGE_PATH: ${{ github.workspace }}
+  AZURE_SUBSCRIPTION: a78174c6-4ab7-47d2-b455-f608e7fd6971
 
 jobs:
   build-and-deploy:
@@ -38,3 +41,19 @@ jobs:
     - name: Set Release Version Env Variable
       run: |
         echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Deploy to Azure Spring Cloud
+      uses: azure/spring-cloud-deploy@v1
+      with:
+        azure-subscription: ${{ env.AZURE_SUBSCRIPTION }}
+        action: Deploy
+        service-name: 'spring-cloud-burger-backend'
+        app-name: 'burger-backend'
+        use-staging-deployment: false
+        package: ${{ env.ASC_PACKAGE_PATH }}/**/*.jar
+        runtime-version: 'Java_11'
+        jvm-options: '-Dspring.profiles.active=prod'
+        version: ${{ env.RELEASE_VERSION }}
