@@ -1,0 +1,71 @@
+<configuration>
+  <appender name="azure-stdout" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+      <providers>
+        <timestamp>
+          <fieldName>timestamp</fieldName>
+          <timeZone>UTC</timeZone>
+        </timestamp>
+        <loggerName>
+          <fieldName>logger</fieldName>
+        </loggerName>
+        <logLevel>
+          <fieldName>level</fieldName>
+        </logLevel>
+        <threadName>
+          <fieldName>thread</fieldName>
+        </threadName>
+        <nestedField>
+          <fieldName>mdc</fieldName>
+          <providers>
+            <mdc/>
+          </providers>
+        </nestedField>
+        <stackTrace>
+          <fieldName>stackTrace</fieldName>
+        </stackTrace>
+        <message/>
+        <throwableClassName>
+          <fieldName>exceptionClass</fieldName>
+        </throwableClassName>
+      </providers>
+    </encoder>
+  </appender>
+
+  <appender name="local-stdout" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>%d{HH:mm:ss.SSS} | %highlight(%-5level) | [%-10.10thread] | %5p | %cyan(%-25.25logger{25}) | %12(ID: %8mdc{id}) | %m%n</pattern>
+      <charset>utf8</charset>
+    </encoder>
+  </appender>
+
+  <springProfile name="prod">
+    <root level="info">
+      <appender-ref ref="azure-stdout"/>
+    </root>
+    <logger name="com.github.longkerdandy" level="debug" additivity="false">
+      <appender-ref ref="azure-stdout" />
+    </logger>
+    <logger name="com.azure" level="error" additivity="false">
+      <appender-ref ref="azure-stdout" />
+    </logger>
+    <logger name="com.netflix" level="error" additivity="false">
+      <appender-ref ref="azure-stdout" />
+    </logger>
+  </springProfile>
+
+  <springProfile name="dev">
+    <root level="info">
+      <appender-ref ref="local-stdout"/>
+    </root>
+    <logger name="com.github.longkerdandy" level="debug" additivity="false">
+      <appender-ref ref="local-stdout" />
+    </logger>
+    <logger name="com.azure" level="warn" additivity="false">
+      <appender-ref ref="local-stdout" />
+    </logger>
+    <logger name="com.netflix" level="warn" additivity="false">
+      <appender-ref ref="local-stdout" />
+    </logger>
+  </springProfile>
+</configuration>

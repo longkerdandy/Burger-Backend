@@ -1,0 +1,40 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Master Branch Workflow - Build maven project and deploy to Azure Spring Cloud
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**/README.md'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    name: Build & Deploy
+
+    steps:
+    - name: Check out
+      uses: actions/checkout@v3
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '11'
+    - name: Setup MongoDB
+      uses: supercharge/mongodb-github-action@1.7.0
+      with:
+        mongodb-version: '4.2'
+    - name: Cache Maven packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Build with Maven
+      run: mvn clean package
+    - name: Set Release Version Env Variable
+      run: |
+        echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
