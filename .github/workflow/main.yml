@@ -6,8 +6,8 @@ name: Main Branch Workflow - Build maven project and deploy to Azure Spring Clou
 on:
   push:
     branches: [ main ]
-    paths-ignore:
-      - '**/README.md'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
