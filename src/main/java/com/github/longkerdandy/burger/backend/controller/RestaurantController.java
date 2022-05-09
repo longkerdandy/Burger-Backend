@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.Point;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -162,7 +163,7 @@ public class RestaurantController {
       @RequestParam(defaultValue = "0") long skip,
       @RequestParam(defaultValue = "20") long limit) {
     // Create point, list the longitude first and then latitude
-    Point point = new Point(longitude, latitude);
+    GeoJsonPoint point = new GeoJsonPoint(longitude, latitude);
     // Search the restaurants based on the given coordinate
     List<Restaurant> restaurants =
         this.repo.findRestaurantsByLocation(point, maxDistance, skip, limit);

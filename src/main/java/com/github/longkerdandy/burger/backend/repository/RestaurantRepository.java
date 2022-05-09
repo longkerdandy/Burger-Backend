@@ -10,13 +10,13 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.GeoNearOperation;
 import org.springframework.data.mongodb.core.aggregation.LimitOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.aggregation.SkipOperation;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.mongodb.core.query.Query;
@@ -104,8 +104,8 @@ public class RestaurantRepository {
    * @param limit       Limit result count
    * @return List of {@link Restaurant}
    */
-  public List<Restaurant> findRestaurantsByLocation(Point point, double maxDistance, long skip,
-      long limit) {
+  public List<Restaurant> findRestaurantsByLocation(GeoJsonPoint point, double maxDistance,
+      long skip, long limit) {
     GeoNearOperation geoNearOp = Aggregation.geoNear(
         NearQuery.near(point, KILOMETERS).maxDistance(maxDistance).spherical(true), FIELD_DISTANCE);
     ProjectionOperation projectOp =
