@@ -108,6 +108,7 @@ public class RestaurantRepository {
       long skip, long limit) {
     GeoNearOperation geoNearOp = Aggregation.geoNear(
         NearQuery.near(point, KILOMETERS).maxDistance(maxDistance).spherical(true), FIELD_DISTANCE);
+    geoNearOp = geoNearOp.useIndex(FIELD_LOCATION);
     ProjectionOperation projectOp =
         Aggregation.project(FIELD_NAME, FIELD_LOGO, FIELD_RATING, FIELD_DISTANCE);
     SkipOperation skipOp = Aggregation.skip(skip);
