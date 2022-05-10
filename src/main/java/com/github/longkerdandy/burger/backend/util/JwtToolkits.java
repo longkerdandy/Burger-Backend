@@ -23,13 +23,14 @@ import org.springframework.stereotype.Component;
 public class JwtToolkits {
 
   private final SecretKey secretKey;    // JWT secret
-
-  @Value("${security.jwt.expiration}")
-  private int expiration;   // JWT token expire in seconds
+  private final int expiration;         // JWT token expire in seconds
 
   @Autowired
-  public JwtToolkits(@Value("${security.jwt.secret}") String secretStr) {
+  public JwtToolkits(
+      @Value("${security.jwt.secret}") String secretStr,
+      @Value("${security.jwt.expiration}") int expiration) {
     this.secretKey = Keys.hmacShaKeyFor(secretStr.getBytes(UTF_8));
+    this.expiration = expiration;
   }
 
   /**

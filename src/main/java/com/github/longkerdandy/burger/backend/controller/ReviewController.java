@@ -4,6 +4,7 @@ import static com.github.longkerdandy.burger.backend.model.Role.ADMIN;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import com.github.longkerdandy.burger.backend.dto.message.CommentMessage;
 import com.github.longkerdandy.burger.backend.dto.request.CommentRequest;
 import com.github.longkerdandy.burger.backend.dto.request.ReviewRequest;
 import com.github.longkerdandy.burger.backend.dto.response.DeleteResponse;
@@ -18,8 +19,10 @@ import com.github.longkerdandy.burger.backend.model.Review;
 import com.github.longkerdandy.burger.backend.model.User;
 import com.github.longkerdandy.burger.backend.repository.RestaurantRepository;
 import com.github.longkerdandy.burger.backend.repository.ReviewRepository;
+import com.github.longkerdandy.burger.backend.service.EventHubService;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
@@ -54,19 +57,21 @@ public class ReviewController {
 
   private final ReviewMapper mapper;             // Review mapper
   private final CommentMapper cmtMapper;         // Comment mapper
-  private final ReviewRepository repo;           // MongoDB
-  private final RestaurantRepository rstRepo;    // MongoDB
+  private final ReviewRepository repo;           // MongoDB for review
+  private final RestaurantRepository rstRepo;    // MongoDB for restaurant
+  private final EventHubService eventHub;        // Event Hub service
 
   /**
    * Constructor.
    */
   @Autowired
   public ReviewController(ReviewMapper mapper, CommentMapper cmtMapper, ReviewRepository repo,
-      RestaurantRepository rstRepo) {
+      RestaurantRepository rstRepo, EventHubService eventHub) {
     this.mapper = mapper;
     this.cmtMapper = cmtMapper;
     this.repo = repo;
     this.rstRepo = rstRepo;
+    this.eventHub = eventHub;
   }
 
   /**
@@ -176,7 +181,7 @@ public class ReviewController {
   @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
   @PostMapping("/api/reviews/{id}/comments")
   public ResponseEntity<?> addComment(@Valid @NotNull @PathVariable ObjectId id,
-      @Valid @RequestBody CommentRequest request) {
+      @Valid @RequestBody CommentRequest request) throws IOException {
     // Mapping from CommentRequest to Comment
     Comment comment = this.cmtMapper.requestToComment(request);
     // Load user information from context and update author information
@@ -190,6 +195,8 @@ public class ReviewController {
     }
     // Try to add comment to the review record
     UpdateResult result = this.repo.addReviewComment(id, comment);
+    // Send to eventhub async
+    this.eventHub.sendCommentMessage(new CommentMessage(id, comment));
     // Response
     return ResponseEntity.ok(
         new UpdateResponse()
