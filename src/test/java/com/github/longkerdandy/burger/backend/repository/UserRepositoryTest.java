@@ -8,8 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.github.longkerdandy.burger.backend.model.User;
 import com.mongodb.client.result.DeleteResult;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -20,8 +22,9 @@ import org.springframework.test.context.ActiveProfiles;
 /**
  * Tests for {@link UserRepository}
  */
-@ActiveProfiles(profiles = {"test"})
 @DataMongoTest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@ActiveProfiles(profiles = {"test"})
 public class UserRepositoryTest {
 
   private static UserRepository userRepo;

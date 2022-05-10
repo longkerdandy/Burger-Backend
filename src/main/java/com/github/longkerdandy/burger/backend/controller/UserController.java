@@ -9,6 +9,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import com.github.longkerdandy.burger.backend.dto.request.LoginRequest;
 import com.github.longkerdandy.burger.backend.dto.request.UserRequest;
+import com.github.longkerdandy.burger.backend.dto.response.DeleteResponse;
 import com.github.longkerdandy.burger.backend.dto.response.LoginResponse;
 import com.github.longkerdandy.burger.backend.dto.response.UpdateResponse;
 import com.github.longkerdandy.burger.backend.dto.response.UserResponse;
@@ -17,6 +18,7 @@ import com.github.longkerdandy.burger.backend.model.Role;
 import com.github.longkerdandy.burger.backend.model.User;
 import com.github.longkerdandy.burger.backend.repository.UserRepository;
 import com.github.longkerdandy.burger.backend.util.JwtToolkits;
+import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +34,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -182,5 +185,28 @@ public class UserController {
     user.setEmail(anonymizeEmail(user.getEmail()));
     // Response
     return ResponseEntity.ok(this.mapper.userToResponse(user));
+  }
+
+  /**
+   * Delete the {@link User} record with specific username.
+   *
+   * @return {@link DeleteResponse}
+   */
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+  @DeleteMapping("/api/users/{username}")
+  public ResponseEntity<?> deleteUser(@Valid @NotEmpty @PathVariable String username) {
+    // Load user information from context
+    SecurityContext context = SecurityContextHolder.getContext();
+    User user = (User) context.getAuthentication().getPrincipal();
+    // If user is not ADMIN, he can only delete the review he posted
+    if (!user.getRoles().contains(ADMIN)) {
+      if (!user.getUsername().equals(username)) {
+        throw new ResponseStatusException(FORBIDDEN, "Don't have permission to delete this user.");
+      }
+    }
+    // Try to delete the restaurant record
+    DeleteResult result = this.repo.deleteUserByName(username);
+    // Response
+    return ResponseEntity.ok(new DeleteResponse().setDeleted(result.getDeletedCount()));
   }
 }
