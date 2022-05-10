@@ -3,8 +3,8 @@ package com.github.longkerdandy.burger.backend.repository;
 import static java.time.Instant.now;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
-import com.github.longkerdandy.burger.backend.model.Restaurant;
 import com.github.longkerdandy.burger.backend.model.User;
+import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,6 +115,18 @@ public class UserRepository {
             .set(FIELD_AVATAR, user.getAvatar())
             .set(FIELD_PROFILE, user.getProfile())
             .set(FIELD_UPDATED_AT, now()),
-        Restaurant.class, COLLECTION_USERS);
+        User.class, COLLECTION_USERS);
+  }
+
+  /**
+   * Delete {@link User} based on the username.
+   *
+   * @param username of {@link User}
+   * @return {@link DeleteResult}
+   */
+  public DeleteResult deleteUserByName(String username) {
+    return this.mongo.remove(
+        new Query().addCriteria(Criteria.where(FIELD_USERNAME).is(username)),
+        User.class, COLLECTION_USERS);
   }
 }
